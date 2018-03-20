@@ -38,7 +38,7 @@ extern "C" {
 #endif
 
 #ifndef S2C_NODE_NAME
-#define S2C_NODE_NAME       ("M05")
+#define S2C_NODE_NAME       ("M03")
 #endif
 
 #ifndef S2C_PAN
@@ -67,6 +67,17 @@ extern "C" {
                                0x03, 0x23, 0x05, 0x03, \
                                0x00, 0x00, 0x00, 0x00, \
                                0x00, 0x00, 0x00, 0x01 }}
+//fe80::1ac0:ffee:c0ff:ee24
+#define S2C_COAP_SRV_ADDR4  {{ 0xfe, 0x80, 0x00, 0x00, \
+                               0x00, 0x00, 0x00, 0x00, \
+                               0x1a, 0xc0, 0xff, 0xee, \
+                               0xc0, 0xff, 0xee, 0x24 }}
+//fd16:abcd:ef24:3::1
+#define S2C_COAP_SRV_ADDR5  {{ 0xfd, 0x16, 0xab, 0x0cd, \
+                               0xef, 0x24, 0x00, 0x03, \
+                               0x00, 0x00, 0x00, 0x00, \
+                               0x00, 0x00, 0x00, 0x01 }}
+
 
 int coap_post_sensor(char *path, const char *data);
 

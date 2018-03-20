@@ -40,6 +40,7 @@ static int comm_init(void)
     uint16_t chn = S2C_CHN;
     uint16_t txp = S2C_TXP;
     uint16_t u16 = 0;
+    ipv6_addr_t ipv6_addrs[GNRC_NETIF_IPV6_ADDRS_NUMOF];
     /* get the PID of the first radio */
     gnrc_netif_t *netif = gnrc_netif_iter(NULL);
 
@@ -70,14 +71,41 @@ static int comm_init(void)
     else if (gnrc_netapi_get(iface, NETOPT_TX_POWER, 0, &u16, sizeof(u16)) >= 0) {
             printf(" TX Power: %" PRIu16 "\n", u16);
     }
+    int res = gnrc_netapi_get(iface, NETOPT_IPV6_ADDR, 0, ipv6_addrs, sizeof(ipv6_addrs));
+    for (unsigned i = 0; i < (res / sizeof(ipv6_addr_t)); i++) {
+        char addr_str[IPV6_ADDR_MAX_STR_LEN];
+        ipv6_addr_to_str(addr_str, &ipv6_addrs[i], sizeof(addr_str));
+        printf(" IPv6 Address[%i]: %s\n", i, addr_str);
+    }
     return 0;
 }
 
+void print_ipv6(void)
+{
+    ipv6_addr_t ipv6_addrs[GNRC_NETIF_IPV6_ADDRS_NUMOF];
+    gnrc_netif_t *netif = gnrc_netif_iter(NULL);
+
+    if (netif == NULL) {
+        return;
+    }
+
+    kernel_pid_t iface = netif->pid;
+    int res = gnrc_netapi_get(iface, NETOPT_IPV6_ADDR, 0, ipv6_addrs, sizeof(ipv6_addrs));
+    for (unsigned i = 0; i < (res / sizeof(ipv6_addr_t)); i++) {
+        char addr_str[IPV6_ADDR_MAX_STR_LEN];
+        ipv6_addr_to_str(addr_str, &ipv6_addrs[i], sizeof(addr_str));
+        printf(" IPv6 Address[%i]: %s\n", i, addr_str);
+    }
+}
 int main(void)
 {
     if (comm_init() != 0) {
         return 1;
     }
+    xtimer_sleep(32);
+    puts("");
+    print_ipv6();
+    puts("");
 
     phydat_t res;
     xtimer_ticks32_t last_wakeup = xtimer_now();
@@ -136,6 +164,7 @@ int main(void)
                 coap_post_sensor(path, json);
             }
             dev = dev->next;
+            xtimer_sleep(2);
         }
         puts("##########################");
 

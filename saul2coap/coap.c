@@ -31,7 +31,7 @@
 #include "saul2coap.h"
 
 static const uint16_t s2c_port = S2C_COAP_SRV_PORT;
-static const ipv6_addr_t s2c_addr = S2C_COAP_SRV_ADDR3;
+static const ipv6_addr_t s2c_addr = S2C_COAP_SRV_ADDR;
 
 static void _resp_handler(unsigned req_state, coap_pkt_t* pdu,
                           sock_udp_ep_t *remote)
@@ -56,6 +56,7 @@ static void _resp_handler(unsigned req_state, coap_pkt_t* pdu,
     if (pdu->payload_len) {
         if ((pdu->content_type == COAP_FORMAT_TEXT) ||
             (pdu->content_type == COAP_FORMAT_LINK) ||
+            (pdu->content_type == COAP_FORMAT_JSON) ||
             (coap_get_code_class(pdu) == COAP_CLASS_CLIENT_FAILURE) ||
             (coap_get_code_class(pdu) == COAP_CLASS_SERVER_FAILURE)) {
             /* Expecting diagnostic payload in failure cases */
@@ -99,8 +100,7 @@ int coap_post_sensor(char *path, const char *data)
 
     len = strlen(data);
     memcpy(pdu.payload, data, len);
-    pdu.payload[len++] = '\0';
-    len = gcoap_finish(&pdu, len, COAP_FORMAT_TEXT);
+    len = gcoap_finish(&pdu, len, COAP_FORMAT_JSON);
 
     if (!_send(buf, len)) {
         LOG_ERROR("%s: send failed!\n", __func__);

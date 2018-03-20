@@ -13,8 +13,11 @@ BOARD ?= native
 ## Uncomment to redefine request token length, max 8.
 #GCOAP_TOKENLEN = 2
 #CFLAGS += -DGCOAP_TOKENLEN=$(GCOAP_TOKENLEN)
-CFLAGS += -DGCOAP_REQ_WAITING_MAX=6
-CFLAGS += -DGCOAP_NON_TIMEOUT=30000000
+CFLAGS += -DGCOAP_REQ_WAITING_MAX=16
+CFLAGS += -DGCOAP_NON_TIMEOUT=15000000
+#CFLAGS += -DS2C_PAN=0x2424
+#CFLAGS += -DS2C_CHN=18
+#CFLAGS += -DS2C_COAP_SRV_PORT=5685
 
 # Include packages that pull up and auto-init the link layer.
 # NOTE: 6LoWPAN will be included if IEEE802.15.4 devices are present
