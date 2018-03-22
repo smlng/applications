@@ -28,12 +28,6 @@
 
 #include "saul2coap.h"
 
-/**
- * @brief   Read th sensors every second
- */
-#define INTERVAL            (1LU * US_PER_SEC)
-
-
 static int comm_init(void)
 {
     uint16_t pan = S2C_PAN;
