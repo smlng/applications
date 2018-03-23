@@ -130,7 +130,11 @@ int main(void)
         int len = snprintf(path, PATHLEN, "/%s/%s/%s", S2C_NODE_NAME, "TFA-THW","RAW");
         path[len] = '\0';
         printf("PATH: %s\n", path);
-        len = snprintf(json, JSONLEN, "{ \"v0\": \"0x%" PRIx64 "\", \"v1\": \"0x%" PRIx64 "\" }", sdat->values[0], sdat->values[1]);
+        len = snprintf(json, JSONLEN, "{ \"v0\": \"0x");
+        len += fmt_u64_hex(json+len, sdat->values[0]);
+        len += snprintf(json+len, JSONLEN-len, "\", \"v1\": \"0x");
+        len += fmt_u64_hex(json+len, sdat->values[1]);
+        len += snprintf(json+len, JSONLEN-len, "\" }");
         printf("JSON: %s\n", json);
         coap_post_sensor(path, json);
     }
