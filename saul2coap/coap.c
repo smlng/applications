@@ -31,7 +31,7 @@
 #include "saul2coap.h"
 
 static const uint16_t s2c_port = S2C_COAP_SRV_PORT;
-static const ipv6_addr_t s2c_addr = S2C_COAP_SRV_ADDR1;
+static const ipv6_addr_t s2c_addr = S2C_COAP_SRV_ADDR;
 
 static void _resp_handler(unsigned req_state, coap_pkt_t* pdu,
                           sock_udp_ep_t *remote)
@@ -97,7 +97,7 @@ int coap_post_sensor(char *path, const char *data)
     size_t len;
 
     gcoap_req_init(&pdu, &buf[0], GCOAP_PDU_BUF_SIZE, COAP_METHOD_POST, path);
-
+    coap_hdr_set_type(pdu.hdr, COAP_TYPE_NON);
     len = strlen(data);
     memcpy(pdu.payload, data, len);
     len = gcoap_finish(&pdu, len, COAP_FORMAT_JSON);
