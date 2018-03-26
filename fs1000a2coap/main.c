@@ -97,7 +97,8 @@ void print_ipv6(void)
 
 #define PATHLEN (32U)
 #define JSONLEN (64U)
-
+static char path[PATHLEN];
+static char json[JSONLEN];
 int main(void)
 {
     if (comm_init() != 0) {
@@ -124,15 +125,26 @@ int main(void)
         msg_t m;
         msg_receive(&m);
         fs1000a_sensor_data_t *sdat = (fs1000a_sensor_data_t *)m.content.ptr;
-        char path[PATHLEN] = {0};
-        char json[JSONLEN] = {0};
 
-        int len = snprintf(path, PATHLEN, "/%s/%s/%s", S2C_NODE_NAME, "TFA-THW","RAW");
+        int len = 0;
+        /* send combined u64 for humidity and temperature */
+        memset(path, 0, PATHLEN);
+        memset(json, 0, JSONLEN);
+        len = snprintf(path, PATHLEN, "/%s/%s/%s", S2C_NODE_NAME, "TFA","HUMTEMP");
         path[len] = '\0';
         printf("PATH: %s\n", path);
         len = snprintf(json, JSONLEN, "{ \"v0\": \"0x");
         len += fmt_u64_hex(json+len, sdat->values[0]);
-        len += snprintf(json+len, JSONLEN-len, "\", \"v1\": \"0x");
+        len += snprintf(json+len, JSONLEN-len, "\" }");
+        printf("JSON: %s\n", json);
+        coap_post_sensor(path, json);
+        /* send u64 for wind speed */
+        memset(path, 0, PATHLEN);
+        memset(json, 0, JSONLEN);
+        len = snprintf(path, PATHLEN, "/%s/%s/%s", S2C_NODE_NAME, "TFA","WIND");
+        path[len] = '\0';
+        printf("PATH: %s\n", path);
+        len = snprintf(json, JSONLEN, "{ \"v0\": \"0x");
         len += fmt_u64_hex(json+len, sdat->values[1]);
         len += snprintf(json+len, JSONLEN-len, "\" }");
         printf("JSON: %s\n", json);

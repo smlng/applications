@@ -2,7 +2,8 @@
 
 # name of your application
 APPLICATION = saul2coap
-
+# default riotbase
+RIOTBASE ?= ../../RIOT
 # If no BOARD is found in the environment, use this default:
 BOARD ?= native
 
@@ -14,7 +15,7 @@ BOARD ?= native
 #GCOAP_TOKENLEN = 2
 #CFLAGS += -DGCOAP_TOKENLEN=$(GCOAP_TOKENLEN)
 CFLAGS += -DGCOAP_REQ_WAITING_MAX=8
-CFLAGS += -DGCOAP_NON_TIMEOUT=15000000
+#CFLAGS += -DGCOAP_NON_TIMEOUT=15000000
 #CFLAGS += -DS2C_PAN=0x2424
 #CFLAGS += -DS2C_CHN=18
 #CFLAGS += -DS2C_COAP_SRV_PORT=5685
