@@ -30,7 +30,7 @@ extern "C" {
 #endif
 
 #ifndef S2C_INTERVAL
-#define S2C_INTERVAL        (60ULL * US_PER_SEC)
+#define S2C_INTERVAL        (30ULL * US_PER_SEC)
 #endif
 
 #ifndef S2C_COAP_SRV_PORT
@@ -38,15 +38,15 @@ extern "C" {
 #endif
 
 #ifndef S2C_NODE_NAME
-#define S2C_NODE_NAME       ("M03")
+#define S2C_NODE_NAME       ("M04")
 #endif
 
 #ifndef S2C_PAN
-#define S2C_PAN             (0x2904)
+#define S2C_PAN             (0x0604)
 #endif
 
 #ifndef S2C_CHN
-#define S2C_CHN             (11U)
+#define S2C_CHN             (14U)
 #endif
 
 #ifndef S2C_TXP
@@ -77,6 +77,11 @@ extern "C" {
                                0xef, 0x24, 0x00, 0x03, \
                                0x00, 0x00, 0x00, 0x00, \
                                0x00, 0x00, 0x00, 0x01 }}
+//fe80::D0AA:2303:2018:0002
+#define S2C_COAP_SRV_ADDR6  {{ 0xfe, 0x80, 0x00, 0x00, \
+                               0x00, 0x00, 0x00, 0x00, \
+                               0xd0, 0xaa, 0x23, 0x03, \
+                               0x20, 0x18, 0x00, 0x02 }}
 
 
 int coap_post_sensor(char *path, const char *data);

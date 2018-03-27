@@ -31,7 +31,7 @@
 #include "saul2coap.h"
 
 static const uint16_t s2c_port = S2C_COAP_SRV_PORT;
-static const ipv6_addr_t s2c_addr = S2C_COAP_SRV_ADDR;
+static const ipv6_addr_t s2c_addr = S2C_COAP_SRV_ADDR6;
 
 static void _resp_handler(unsigned req_state, coap_pkt_t* pdu,
                           sock_udp_ep_t *remote)
