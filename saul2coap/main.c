@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Freie Universität Berlin
+ * Copyright (C) 2018 HAW Hamburg
  *
  * This file is subject to the terms and conditions of the GNU Lesser
  * General Public License v2.1. See the file LICENSE in the top level
@@ -7,14 +7,15 @@
  */
 
 /**
- * @ingroup     tests
+ * @ingroup     saul2coap
+ * @{
  *
  * @file
- * @brief       Test the SAUL interface of devices by periodically reading from
- *              them
+ * @brief       SAUL2CoAP main
  *
- * @author      Hauke Petersen <hauke.petersen@fu-berlin.de>
+ * @author      Sebastian Meiling <s@mlng.net>
  *
+ * @}
  */
 
 #include <stdio.h>
@@ -22,148 +23,169 @@
 #include "fmt.h"
 #include "net/gnrc/netapi.h"
 #include "net/gnrc/netif.h"
-#include "xtimer.h"
 #include "phydat.h"
 #include "saul_reg.h"
+#include "shell.h"
+#include "shell_commands.h"
+#include "thread.h"
+#include "xtimer.h"
 
 #include "saul2coap.h"
 
-static int comm_init(void)
+int s2c_cmd(int argc, char **argv);
+
+static const shell_command_t shell_commands[] = {
+    { "saul2coap", "Setup SAUL2CoAP background thread.", s2c_cmd },
+    { NULL, NULL, NULL }
+};
+
+static char name[S2C_NAME_BUFLEN] = S2C_NODE_NAME;
+static char path[S2C_PATH_BUFLEN];
+static char json[S2C_JSON_BUFLEN];
+
+static char saul2coap_stack[THREAD_STACKSIZE_MAIN];
+static uint32_t s2c_interval = S2C_INTERVAL;
+static volatile int run_loop = 0;
+
+void *_saul2coap_loop(void *arg)
 {
-    uint16_t pan = S2C_PAN;
-    uint16_t chn = S2C_CHN;
-    uint16_t txp = S2C_TXP;
-    uint16_t u16 = 0;
-    ipv6_addr_t ipv6_addrs[GNRC_NETIF_IPV6_ADDRS_NUMOF];
-    /* get the PID of the first radio */
-    gnrc_netif_t *netif = gnrc_netif_iter(NULL);
+    (void)arg;
 
-    if (netif == NULL) {
-        puts("!! comm_init failed, no network interface found !!");
-        return 1;
-    }
-    else {
-        puts ("*** Primary Network Interface Configuration ***");
-    }
-    kernel_pid_t iface = netif->pid;
-    /* initialize the radio */
-    if (gnrc_netapi_set(iface, NETOPT_NID, 0, &pan, 2) < 0) {
-        puts("!! failed to set PAN ID !!");
-    }
-    else if (gnrc_netapi_get(iface, NETOPT_NID, 0, &u16, sizeof(u16)) >= 0) {
-            printf(" PAN ID: 0x%" PRIx16"\n", u16);
-    }
-    if (gnrc_netapi_set(iface, NETOPT_CHANNEL, 0, &chn, 2) < 0) {
-        puts("!! failed to set channel !!");
-    }
-    else if (gnrc_netapi_get(iface, NETOPT_CHANNEL, 0, &u16, sizeof(u16)) >= 0) {
-            printf(" Channel: %" PRIu16 "\n", u16);
-    }
-    if (gnrc_netapi_set(iface, NETOPT_TX_POWER, 0, &txp, 2) < 0) {
-        puts("!! failed to tx power !!");
-    }
-    else if (gnrc_netapi_get(iface, NETOPT_TX_POWER, 0, &u16, sizeof(u16)) >= 0) {
-            printf(" TX Power: %" PRIu16 "\n", u16);
-    }
-    int res = gnrc_netapi_get(iface, NETOPT_IPV6_ADDR, 0, ipv6_addrs, sizeof(ipv6_addrs));
-    for (unsigned i = 0; i < (res / sizeof(ipv6_addr_t)); i++) {
-        char addr_str[IPV6_ADDR_MAX_STR_LEN];
-        ipv6_addr_to_str(addr_str, &ipv6_addrs[i], sizeof(addr_str));
-        printf(" IPv6 Address[%i]: %s\n", i, addr_str);
-    }
-    return 0;
-}
-
-void print_ipv6(void)
-{
-    ipv6_addr_t ipv6_addrs[GNRC_NETIF_IPV6_ADDRS_NUMOF];
-    gnrc_netif_t *netif = gnrc_netif_iter(NULL);
-
-    if (netif == NULL) {
-        return;
-    }
-
-    kernel_pid_t iface = netif->pid;
-    int res = gnrc_netapi_get(iface, NETOPT_IPV6_ADDR, 0, ipv6_addrs, sizeof(ipv6_addrs));
-    for (unsigned i = 0; i < (res / sizeof(ipv6_addr_t)); i++) {
-        char addr_str[IPV6_ADDR_MAX_STR_LEN];
-        ipv6_addr_to_str(addr_str, &ipv6_addrs[i], sizeof(addr_str));
-        printf(" IPv6 Address[%i]: %s\n", i, addr_str);
-    }
-}
-int main(void)
-{
-    if (comm_init() != 0) {
-        return 1;
-    }
-    xtimer_sleep(32);
-    puts("");
-    print_ipv6();
-    puts("");
-
-    phydat_t res;
     xtimer_ticks32_t last_wakeup = xtimer_now();
 
-    puts("\n*** SAUL-to-CoAP application ***\n");
-
-    while (1) {
+    while (run_loop) {
         saul_reg_t *dev = saul_reg;
 
         if (dev == NULL) {
-            puts("No SAUL devices present");
-            return 1;
+            puts("ERROR: No SAUL devices present");
+            return NULL;
         }
 
         while (dev) {
+            phydat_t res;
             if (dev->driver->type >= SAUL_SENSE_ANY) {
                 int dim = saul_reg_read(dev, &res);
                 if (dim < 1) {
                     continue;
                 }
 
-                char path[32] = {0};
-                char json[64] = {0};
+                memset(path, 0, S2C_PATH_BUFLEN);
+                memset(json, 0, S2C_JSON_BUFLEN);
 
-                int len = snprintf(path, 32, "/%s/%s/%s",
-                                   S2C_NODE_NAME, dev->name,
+                int len = snprintf(path, S2C_PATH_BUFLEN, "/%s/%s/%s",
+                                   name, dev->name,
                                    &saul_class_to_str(dev->driver->type)[6]);
-                path[len] = '\0';
-                printf("PATH: %s\n", path);
-                len = snprintf(json, 64, "{ ");
+
+                len = snprintf(json, S2C_JSON_BUFLEN, "{ ");
                 for (int i = 0; i < dim; ++i) {
                     if (i > 0) {
-                        len += snprintf(json + len, 64,", ");
+                        len += snprintf(json + len, S2C_JSON_BUFLEN - len,
+                                        ", ");
                     }
                     if (res.scale < 0) {
-                    //
-                        len += snprintf(json + len, 64,"\"v%i\": \"", i);
+                        len += snprintf(json + len, S2C_JSON_BUFLEN - len,
+                                        "\"v%i\": ", i);
 
                         len += fmt_s16_dfp(json + len, res.val[i], -res.scale);
-                        len += snprintf(json + len, 64,"\"");
                     }
-                    /*
-                    else if (res.scale > 0) {
-                        len += snprintf(json+len, 64,"\"v%i\": \"%"PRIi16"E%i\"", i, res.val[i], (int)res.scale);
-                    }*/
                     else {
-                        len += snprintf(json+len, 64,"\"v%i\": \"%"PRIi16, i, res.val[i]);
+                        len += snprintf(json+len, S2C_JSON_BUFLEN - len,
+                                        "\"v%i\": %"PRIi16, i, res.val[i]);
                         for (int i = 0; i < (int)res.scale; ++i) {
                             json[len++] = '0';
                         }
-                        len += snprintf(json+len, 64,"\"");
                     }
                 }
-                len += snprintf(json + len, 64," }");
-                printf("JSON: %s\n", json);
+                len += snprintf(json + len, S2C_JSON_BUFLEN - len, " }");
+                printf("PATH: %s, JSON: %s\n", path, json);
                 coap_post_sensor(path, json);
             }
             dev = dev->next;
-            xtimer_sleep(2);
+            xtimer_sleep(1);
         }
-        puts("##########################");
+        puts("********************************");
 
-        xtimer_periodic_wakeup(&last_wakeup, S2C_INTERVAL);
+        xtimer_periodic_wakeup(&last_wakeup, s2c_interval);
     }
+    return NULL;
+}
+
+void s2c_usage(void)
+{
+    puts("USAGE");
+    puts("  saul2coap stop");
+    puts("  saul2coap start IPADDR [PORT]");
+    puts("    IPADDR    IP address of CoAP server");
+    puts("    PORT      destination port of CoAP server");
+    puts("  saul2coap interval [INTERVAL]");
+    puts("    INTERVAL  CoAP send interval in seconds");
+    puts("  saul2coap nodename [NAME]");
+    puts("    NAME  Node name as string (maxlen=16)");
+}
+
+int s2c_cmd(int argc, char **argv)
+{
+    if ((argc == 2) && (strcmp(argv[1], "stop") == 0)) {
+        run_loop = 0;
+        return 0;
+    }
+    if ((argc == 2) && (strcmp(argv[1], "interval") == 0)) {
+        printf("Interval = %"PRIu32"s\n", s2c_interval/US_PER_SEC);
+        return 0;
+    }
+    if ((argc == 2) && (strcmp(argv[1], "nodename") == 0)) {
+        printf("Nodename = %s\n", name);
+        return 0;
+    }
+    if (argc > 2) {
+        if (strcmp(argv[1], "start") == 0) {
+            ipv6_addr_t addr;
+            if (ipv6_addr_from_str(&addr, argv[2]) == NULL) {
+                puts("ERROR: failed to parse server address!");
+                return 2;
+            }
+            coap_server_addr(&addr);
+            run_loop = 1;
+            kernel_pid_t s2c_pid = thread_create(saul2coap_stack,
+                                                 sizeof(saul2coap_stack),
+                                                 THREAD_PRIORITY_MAIN - 1,
+                                                 THREAD_CREATE_STACKTEST,
+                                                 _saul2coap_loop, NULL, "s2c");
+            if (s2c_pid > KERNEL_PID_UNDEF) {
+                return 0;
+            }
+            puts("ERROR: failed to start SAUL2CoAP!");
+            run_loop = 0;
+            return 2;
+        }
+        else if (strcmp(argv[1], "interval") == 0) {
+            long int tmp = strtol(argv[2], NULL, 10);
+            if (tmp > 0) {
+                s2c_interval = (uint32_t)tmp * US_PER_SEC;
+                return 0;
+            }
+            puts("ERROR: invalid interval!");
+            return 3;
+        }
+        else if (strcmp(argv[1], "nodename") == 0) {
+            if (strlen(argv[2]) < S2C_NAME_BUFLEN) {
+                strcpy(name, argv[2]);
+                return 0;
+            }
+            puts("ERROR: invalid nodename!");
+            return 4;
+        }
+    }
+    s2c_usage();
+    return 1;
+}
+
+int main(void)
+{
+    puts("\n*** SAUL-to-CoAP application ***\n");
+
+    char line_buf[SHELL_DEFAULT_BUFSIZE];
+    shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
 
     return 0;
 }

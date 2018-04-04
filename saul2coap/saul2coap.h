@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 HAW Hamburg
+ * Copyright (c) 2018 HAW Hamburg
  *
  * This file is subject to the terms and conditions of the GNU Lesser
  * General Public License v2.1. See the file LICENSE in the top level
@@ -7,12 +7,12 @@
  */
 
 /**
- * @defgroup    vslab-riot
- * @brief       VS practical exercise with RIOT-OS
+ * @defgroup    saul2coap
+ * @brief       SAUL-to-CoAP example application
  * @{
  *
  * @file
- * @brief       Leader Election
+ * @brief       CoAP interface
  *
  * @author      Sebastian Meiling <s@mlng.net>
  */
@@ -33,57 +33,36 @@ extern "C" {
 #define S2C_INTERVAL        (30ULL * US_PER_SEC)
 #endif
 
-#ifndef S2C_COAP_SRV_PORT
-#define S2C_COAP_SRV_PORT   (5683U)
-#endif
-
 #ifndef S2C_NODE_NAME
-#define S2C_NODE_NAME       ("M04")
+#define S2C_NODE_NAME       ("SAUL2CoAP")
 #endif
 
-#ifndef S2C_PAN
-#define S2C_PAN             (0x0604)
-#endif
+#define S2C_NAME_BUFLEN     (16U)
+#define S2C_PATH_BUFLEN     (32U)
+#define S2C_JSON_BUFLEN     (64U)
 
-#ifndef S2C_CHN
-#define S2C_CHN             (14U)
-#endif
+/**
+ * @brief Set port of CoAP server
+ *
+ * @pre @p port must be > 0
+ */
+void coap_server_port(uint16_t port);
 
-#ifndef S2C_TXP
-#define S2C_TXP             (16U)
-#endif
+/**
+ * @brief Set IP address of CoAP server
+ *
+ * @pre @p addr must not be unspecified or multicast
+ */
+void coap_server_addr(const ipv6_addr_t *addr);
 
-#define S2C_COAP_SRV_ADDR1  {{ 0xfd, 0x83, 0x20, 0x18, \
-                               0x03, 0x23, 0x01, 0x03, \
-                               0x00, 0x00, 0x00, 0x00, \
-                               0x00, 0x00, 0x00, 0x01 }}
-
-#define S2C_COAP_SRV_ADDR2  {{ 0xfd, 0x83, 0x20, 0x18, \
-                               0x03, 0x23, 0x02, 0x03, \
-                               0x00, 0x00, 0x00, 0x00, \
-                               0x00, 0x00, 0x00, 0x01 }}
-
-#define S2C_COAP_SRV_ADDR3  {{ 0xfd, 0x83, 0x20, 0x18, \
-                               0x03, 0x23, 0x05, 0x03, \
-                               0x00, 0x00, 0x00, 0x00, \
-                               0x00, 0x00, 0x00, 0x01 }}
-//fe80::1ac0:ffee:c0ff:ee24
-#define S2C_COAP_SRV_ADDR4  {{ 0xfe, 0x80, 0x00, 0x00, \
-                               0x00, 0x00, 0x00, 0x00, \
-                               0x1a, 0xc0, 0xff, 0xee, \
-                               0xc0, 0xff, 0xee, 0x24 }}
-//fd16:abcd:ef24:3::1
-#define S2C_COAP_SRV_ADDR5  {{ 0xfd, 0x16, 0xab, 0x0cd, \
-                               0xef, 0x24, 0x00, 0x03, \
-                               0x00, 0x00, 0x00, 0x00, \
-                               0x00, 0x00, 0x00, 0x01 }}
-//fe80::D0AA:2303:2018:0002
-#define S2C_COAP_SRV_ADDR6  {{ 0xfe, 0x80, 0x00, 0x00, \
-                               0x00, 0x00, 0x00, 0x00, \
-                               0xd0, 0xaa, 0x23, 0x03, \
-                               0x20, 0x18, 0x00, 0x02 }}
-
-
+/**
+ * @brief Send (non-confirmable) CoAP POST request
+ *
+ * @param[in] path  resource handle
+ * @param[in] data  message payload
+ *
+ * @returns 0 on success, or error otherwise
+ */
 int coap_post_sensor(char *path, const char *data);
 
 #ifdef __cplusplus
