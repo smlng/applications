@@ -145,17 +145,17 @@ int s2c_cmd(int argc, char **argv)
                 return 2;
             }
             coap_server_addr(&addr);
-            run_loop = 1;
+
             kernel_pid_t s2c_pid = thread_create(saul2coap_stack,
                                                  sizeof(saul2coap_stack),
                                                  THREAD_PRIORITY_MAIN - 1,
                                                  THREAD_CREATE_STACKTEST,
                                                  _saul2coap_loop, NULL, "s2c");
             if (s2c_pid > KERNEL_PID_UNDEF) {
+                run_loop = 1;
                 return 0;
             }
             puts("ERROR: failed to start SAUL2CoAP!");
-            run_loop = 0;
             return 2;
         }
         else if (strcmp(argv[1], "interval") == 0) {
