@@ -130,7 +130,7 @@ int main(void)
         /* send combined u64 for humidity and temperature */
         memset(path, 0, PATHLEN);
         memset(json, 0, JSONLEN);
-        len = snprintf(path, PATHLEN, "/%s/%s/%s", S2C_NODE_NAME, "TFA","HUMTEMP");
+        len = snprintf(path, PATHLEN, "/%s/%s/%s", S2C_NODE_NAME, "TFA","WIND");
         path[len] = '\0';
         printf("PATH: %s\n", path);
         len = snprintf(json, JSONLEN, "{ \"v0\": \"0x");
@@ -141,7 +141,7 @@ int main(void)
         /* send u64 for wind speed */
         memset(path, 0, PATHLEN);
         memset(json, 0, JSONLEN);
-        len = snprintf(path, PATHLEN, "/%s/%s/%s", S2C_NODE_NAME, "TFA","WIND");
+        len = snprintf(path, PATHLEN, "/%s/%s/%s", S2C_NODE_NAME, "TFA","HUMTEMP");
         path[len] = '\0';
         printf("PATH: %s\n", path);
         len = snprintf(json, JSONLEN, "{ \"v0\": \"0x");
