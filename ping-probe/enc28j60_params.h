@@ -33,13 +33,13 @@ extern "C" {
 #define ENC28J60_PARAM_SPI      (SPI_DEV(0))
 #endif
 #ifndef ENC28J60_PARAM_CS
-#define ENC28J60_PARAM_CS       (GPIO_PIN(1, 0))
+#define ENC28J60_PARAM_CS       (GPIO_PIN(0, 4))
 #endif
 #ifndef ENC28J60_PARAM_INT
-#define ENC28J60_PARAM_INT      (GPIO_PIN(1, 1))
+#define ENC28J60_PARAM_INT      (GPIO_PIN(1, 0))
 #endif
 #ifndef ENC28J60_PARAM_RESET
-#define ENC28J60_PARAM_RESET    (GPIO_PIN(1, 10))
+#define ENC28J60_PARAM_RESET    (GPIO_PIN(1, 1))
 #endif
 
 #ifndef ENC28J60_PARAMS

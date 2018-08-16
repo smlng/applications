@@ -29,7 +29,7 @@
 #define MAIN_QUEUE_SIZE     (8U)
 
 static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
-static gnrc_netreg_entry_t dump_undef;
+static gnrc_netreg_entry_t dump_icmp;
 
 static void print_ipv6_addresses(void)
 {
@@ -60,8 +60,8 @@ int main(void)
 
     print_ipv6_addresses();
 
-    gnrc_netreg_entry_init_pid(&dump_undef, GNRC_NETREG_DEMUX_CTX_ALL, gnrc_pktdump_pid);
-    gnrc_netreg_register(GNRC_NETTYPE_UNDEF, &dump_undef);
+    gnrc_netreg_entry_init_pid(&dump_icmp, GNRC_NETREG_DEMUX_CTX_ALL, gnrc_pktdump_pid);
+    gnrc_netreg_register(GNRC_NETTYPE_ICMPV6, &dump_icmp);
 
     /* should be never reached */
     return 0;
