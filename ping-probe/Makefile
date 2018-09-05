@@ -15,7 +15,7 @@ USEMODULE += gnrc_pktdump
 USEMODULE += gnrc_icmpv6_echo
 
 # Change this to 1 to enable code in RIOT that does safety checking
-DEVELHELP ?= 0
+DEVELHELP ?= 1
 
 CFLAGS += -DGNRC_IPV6_NIB_NUMOF=1
 CFLAGS += -DGNRC_IPV6_NIB_OFFL_NUMOF=1
