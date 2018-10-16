@@ -32,9 +32,9 @@
 #define MAX(a,b)    ((a > b) ? a : b)
 #define MIN(a,b)    ((a < b) ? a : b)
 
-#define MAIN_QUEUE_SIZE     (8U)
+#define MAIN_QUEUE_SIZE     (16U)
 #define FS1000A_PIN         GPIO_PIN(0, 0)
-#define FS1000A_INTERVAL_MS (5000U)
+#define FS1000A_INTERVAL_MS (2000U)
 
 static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
 static volatile uint32_t last = 0;
@@ -54,7 +54,7 @@ static void _recv_cb(void *arg)
     last = now;
 }
 
-#define NUM_SAMPLES  64U
+#define NUM_SAMPLES  16U
 int main(void)
 {
     rt = thread_getpid();
@@ -70,12 +70,12 @@ int main(void)
     max = avg = count = 0;
     min = 0xffffffff;
 
-    uint32_t now_ms, last_ms = (uint32_t)(xtimer_now_usec64() / US_PER_MS);
+    uint32_t now_ms, last_ms = (uint32_t)(xtimer_now_usec() / US_PER_MS);
     now_ms = last_ms;
 
     while(++count) {
         if ((count % NUM_SAMPLES) == 0) {
-            now_ms = (uint32_t)(xtimer_now_usec64() / US_PER_MS);
+            now_ms = (uint32_t)(xtimer_now_usec() / US_PER_MS);
         }
         if ((now_ms - last_ms) > FS1000A_INTERVAL_MS) {
             //memset(samples, 0, NUM_SAMPLES);
