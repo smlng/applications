@@ -34,7 +34,7 @@
 
 #define MAIN_QUEUE_SIZE     (16U)
 #define FS1000A_PIN         GPIO_PIN(0, 0)
-#define FS1000A_INTERVAL_MS (1000U)
+#define FS1000A_INTERVAL_MS (5000U)
 
 static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
 static volatile uint32_t last = 0;
