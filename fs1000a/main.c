@@ -84,6 +84,7 @@ int main(void)
             avg = 0;
             min = 0xffffffff;
             last_ms = now_ms;
+            last_count = count;
         }
         msg_t m;
         msg_receive(&m);
