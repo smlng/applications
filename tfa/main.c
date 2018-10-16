@@ -43,7 +43,6 @@ typedef struct {
 
 #define MAIN_QUEUE_SIZE     (8U)
 #define FS1000A_PIN         GPIO_PIN(0, 0)
-#define FS1000A_INTERVAL_MS (5000U)
 
 static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
 static volatile uint32_t last = 0;
@@ -171,9 +170,8 @@ int main(void)
 
     rt = thread_getpid();
 
-    xtimer_sleep(3);
+    xtimer_sleep(5);
     print_ipv6_addresses();
-    xtimer_sleep(3);
 
     if (gpio_init_int(FS1000A_PIN, GPIO_IN, GPIO_BOTH, _recv_cb, NULL) < 0) {
         DEBUG("main: gpio_init_int failed!\n");

@@ -10,13 +10,10 @@ RIOTBASE ?= $(CURDIR)/../../RIOT
 FEATURES_REQUIRED += periph_gpio_irq
 
 # some custom config
-CFLAGS += -DGCOAP_REQ_WAITING_MAX=6
+CFLAGS += -DGCOAP_REQ_WAITING_MAX=4
 #CFLAGS += -DGCOAP_STACK_SIZE=1536
 CFLAGS += -DGCOAP_NON_TIMEOUT=500000
 CFLAGS += -DGNRC_PKTBUF_SIZE=2000
-#CFLAGS += -DS2C_PAN=0x2424
-#CFLAGS += -DS2C_CHN=18
-#CFLAGS += -DS2C_COAP_SRV_PORT=5685
 
 # Include packages that pull up and auto-init the link layer.
 # NOTE: 6LoWPAN will be included if IEEE802.15.4 devices are present
