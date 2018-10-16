@@ -7,7 +7,7 @@ BOARD ?= bluepill
 # This has to be the absolute path to the RIOT base directory:
 RIOTBASE ?= $(CURDIR)/../../RIOT
 
-FEATURES_REQUIRED += periph_gpio
+FEATURES_REQUIRED += periph_gpio_irq
 USEMODULE += xtimer
 
 # Comment this out to disable code in RIOT that does safety checking
