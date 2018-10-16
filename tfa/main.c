@@ -114,8 +114,8 @@ static int _decode_plain2(uint32_t t1, uint32_t t2, size_t inpos,
     return outpos;
 }
 
-#define PATHLEN (32U)
-#define JSONLEN (64U)
+#define PATHLEN (24U)
+#define JSONLEN (32U)
 static char path[PATHLEN];
 static char json[JSONLEN];
 
@@ -146,7 +146,7 @@ void send_data(fs1000a_sensor_data_t *sdat)
     coap_post_sensor(path, json);
 }
 
-void print_ipv6(void)
+static void print_ipv6_addresses(void)
 {
     ipv6_addr_t ipv6_addrs[GNRC_NETIF_IPV6_ADDRS_NUMOF];
     gnrc_netif_t *netif = gnrc_netif_iter(NULL);
@@ -156,7 +156,8 @@ void print_ipv6(void)
     }
 
     kernel_pid_t iface = netif->pid;
-    int res = gnrc_netapi_get(iface, NETOPT_IPV6_ADDR, 0, ipv6_addrs, sizeof(ipv6_addrs));
+    int res = gnrc_netapi_get(iface, NETOPT_IPV6_ADDR, 0,
+                              ipv6_addrs, sizeof(ipv6_addrs));
     for (unsigned i = 0; i < (res / sizeof(ipv6_addr_t)); i++) {
         char addr_str[IPV6_ADDR_MAX_STR_LEN];
         ipv6_addr_to_str(addr_str, &ipv6_addrs[i], sizeof(addr_str));
@@ -170,9 +171,9 @@ int main(void)
 
     rt = thread_getpid();
 
-    xtimer_sleep(5);
-    print_ipv6();
-    xtimer_sleep(5);
+    xtimer_sleep(3);
+    print_ipv6_addresses();
+    xtimer_sleep(3);
 
     if (gpio_init_int(FS1000A_PIN, GPIO_IN, GPIO_BOTH, _recv_cb, NULL) < 0) {
         DEBUG("main: gpio_init_int failed!\n");
