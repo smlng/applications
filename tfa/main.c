@@ -146,11 +146,33 @@ void send_data(fs1000a_sensor_data_t *sdat)
     coap_post_sensor(path, json);
 }
 
+void print_ipv6(void)
+{
+    ipv6_addr_t ipv6_addrs[GNRC_NETIF_IPV6_ADDRS_NUMOF];
+    gnrc_netif_t *netif = gnrc_netif_iter(NULL);
+
+    if (netif == NULL) {
+        return;
+    }
+
+    kernel_pid_t iface = netif->pid;
+    int res = gnrc_netapi_get(iface, NETOPT_IPV6_ADDR, 0, ipv6_addrs, sizeof(ipv6_addrs));
+    for (unsigned i = 0; i < (res / sizeof(ipv6_addr_t)); i++) {
+        char addr_str[IPV6_ADDR_MAX_STR_LEN];
+        ipv6_addr_to_str(addr_str, &ipv6_addrs[i], sizeof(addr_str));
+        printf(" IPv6 Address[%i]: %s\n", i, addr_str);
+    }
+}
+
 int main(void)
 {
     msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);
 
     rt = thread_getpid();
+
+    xtimer_sleep(5);
+    print_ipv6();
+    xtimer_sleep(5);
 
     if (gpio_init_int(FS1000A_PIN, GPIO_IN, GPIO_BOTH, _recv_cb, NULL) < 0) {
         DEBUG("main: gpio_init_int failed!\n");
