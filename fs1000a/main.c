@@ -34,7 +34,7 @@
 
 #define MAIN_QUEUE_SIZE     (16U)
 #define FS1000A_PIN         GPIO_PIN(0, 0)
-#define FS1000A_INTERVAL_MS (2000U)
+#define FS1000A_INTERVAL_MS (1000U)
 
 static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
 static volatile uint32_t last = 0;
@@ -54,7 +54,7 @@ static void _recv_cb(void *arg)
     last = now;
 }
 
-#define NUM_SAMPLES  16U
+#define NUM_SAMPLES  20U
 int main(void)
 {
     rt = thread_getpid();
@@ -66,8 +66,8 @@ int main(void)
     }
     /* stats: max_now, max_all, min_now, min_all, avg_now, avg_all */
     //uint32_t samples[NUM_SAMPLES];
-    uint32_t count, max, min, avg = 0;
-    max = avg = count = 0;
+    uint32_t count, last_count, max, min, avg;
+    max = avg = count = last_count = 0;
     min = 0xffffffff;
 
     uint32_t now_ms, last_ms = (uint32_t)(xtimer_now_usec() / US_PER_MS);
@@ -77,7 +77,7 @@ int main(void)
         if ((count % NUM_SAMPLES) == 0) {
             now_ms = (uint32_t)(xtimer_now_usec() / US_PER_MS);
         }
-        if ((now_ms - last_ms) > FS1000A_INTERVAL_MS) {
+        if (((now_ms - last_ms) > FS1000A_INTERVAL_MS) || ((count - last_count) > 100U))  {
             //memset(samples, 0, NUM_SAMPLES);
             printf("%"PRIu32",%"PRIu32",%"PRIu32",%"PRIu32"\n", count, max, avg, min);
             max = 0;
