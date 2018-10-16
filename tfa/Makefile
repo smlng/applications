@@ -13,7 +13,7 @@ FEATURES_REQUIRED += periph_gpio_irq
 CFLAGS += -DGCOAP_REQ_WAITING_MAX=4
 #CFLAGS += -DGCOAP_STACK_SIZE=1536
 CFLAGS += -DGCOAP_NON_TIMEOUT=500000
-CFLAGS += -DGNRC_PKTBUF_SIZE=2000
+CFLAGS += -DGNRC_PKTBUF_SIZE=2500
 
 # Include packages that pull up and auto-init the link layer.
 # NOTE: 6LoWPAN will be included if IEEE802.15.4 devices are present

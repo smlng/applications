@@ -62,8 +62,8 @@ static void _recv_cb(void *arg)
     last = now;
 }
 
-#define BUFLEN              (1700U)
-#define DCBLEN              (16U)
+#define BUFLEN              (1500U)
+#define DCBLEN              (12U)
 #define SENSOR_THRESHOLD    (100000UL)
 
 static uint32_t buffer[BUFLEN];
