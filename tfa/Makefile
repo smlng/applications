@@ -7,6 +7,7 @@ BOARD ?= bluepill
 # This has to be the absolute path to the RIOT base directory:
 RIOTBASE ?= $(CURDIR)/../../RIOT
 
+FEATURES_REQUIRED += periph_gpio
 FEATURES_REQUIRED += periph_gpio_irq
 
 # some custom config
@@ -26,6 +27,7 @@ USEMODULE += gcoap
 USEMODULE += gnrc_icmpv6_echo
 # sensor stuff
 USEMODULE += fmt
+USEMODULE += periph_gpio
 USEMODULE += xtimer
 
 GNRC_NETIF_NUMOF := 1

@@ -169,10 +169,10 @@ int main(void)
     msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);
 
     rt = thread_getpid();
-
+    LED0_OFF;
     xtimer_sleep(5);
     print_ipv6_addresses();
-
+    LED0_ON;
     if (gpio_init_int(FS1000A_PIN, GPIO_IN, GPIO_BOTH, _recv_cb, NULL) < 0) {
         DEBUG("main: gpio_init_int failed!\n");
         return 1;
@@ -190,6 +190,7 @@ int main(void)
         buffer[pos] = val;
         counter++;
         if (val > SENSOR_THRESHOLD) {
+            LED0_TOGGLE;
             memset(outbuf, 0, DCBLEN);
             unsigned ret = _decode_plain2(380, 580, pos, buffer, BUFLEN, outbuf, DCBLEN);
             if (ret > 0) {
